@@ -3,6 +3,7 @@ const app = express()
 const cors = require('cors');
 const bodyParser = require('body-parser')
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId
 require('dotenv').config()
 console.log(process.env.DB_USER)
 
@@ -24,6 +25,15 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
   console.log('connection err',err)
   const eventCollection = client.db("volunteerNetworkTwo").collection("events");
+
+ app.get('/events',(req,res) => {
+  eventCollection.find()
+  .toArray((err,items)=>{
+   res.send(items)
+
+  })
+ })
+
  app.post('/addEvent',(req,res)=>{
    const newEvent = req.body;
    console.log('addeing  new event',newEvent)
@@ -35,6 +45,13 @@ client.connect(err => {
    })
  })
  
+ app.delete('deleteEvent/:id',(req,res)=>{
+const id = ObjectId(req.params.id);
+
+console.log('delete this',id)
+eventCollection.findOneAndDelete({_id:id})
+.then(documents => res.send(!!documents.value))
+ })
 
 });
 
